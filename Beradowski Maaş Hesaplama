@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Beradowski Maaş Hesaplama</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  margin:0;
+  font-family: Arial;
+  background: linear-gradient(135deg,#141e30,#243b55);
+  color:white;
+  overflow-x:hidden;
+}
+
+#splash {
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:#000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+  flex-direction:column;
+  font-size:28px;
+}
+
+.container {
+  max-width:400px;
+  margin:30px auto;
+  padding:20px;
+}
+
+.card {
+  background: rgba(255,255,255,0.08);
+  border-radius:20px;
+  padding:20px;
+}
+
+input, select {
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border:none;
+  border-radius:10px;
+}
+
+button {
+  width:100%;
+  padding:14px;
+  background:#00e676;
+  border:none;
+  border-radius:10px;
+  font-size:18px;
+}
+
+#sonuc {
+  margin-top:15px;
+  text-align:center;
+}
+
+canvas {
+  margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="splash">
+  <div style="font-size:32px;">💰</div>
+  <div style="margin-top:10px;">Beradowski</div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <h2>💰 Beradowski Maaş Hesaplama</h2>
+
+    <input id="maas" type="number" value="35000">
+    <input id="gun" type="number" value="30">
+    <input id="mesai" type="number" placeholder="Mesai Saati">
+
+    <select id="tip">
+      <option value="1.5">%50 Mesai</option>
+      <option value="2">%100 Mesai</option>
+    </select>
+
+    <button onclick="hesapla()">HESAPLA</button>
+
+    <div id="sonuc"></div>
+
+    <canvas id="grafik"></canvas>
+  </div>
+</div>
+
+<script>
+// splash
+setTimeout(()=> {
+  document.getElementById("splash").style.display="none";
+},1500);
+
+let chart;
+
+function hesapla() {
+  let maas = document.getElementById("maas").value;
+  let gun = document.getElementById("gun").value;
+  let mesai = document.getElementById("mesai").value;
+  let katsayi = document.getElementById("tip").value;
+
+  let saatlik = maas / (46 * 4.33);
+  let gunluk = maas / 30;
+  let mesaiUcret = saatlik * katsayi;
+
+  let toplam = (gunluk * gun) + (mesaiUcret * mesai);
+
+  document.getElementById("sonuc").innerHTML =
+    "Toplam Maaş: <b>" + toplam.toFixed(2) + " TL</b>";
+
+  // kayıt
+  localStorage.setItem("sonMaas", toplam);
+
+  // grafik
+  let data = [];
+  for(let i=0;i<=mesai;i++){
+    data.push((gunluk*gun)+(mesaiUcret*i));
+  }
+
+  if(chart) chart.destroy();
+
+  chart = new Chart(document.getElementById("grafik"), {
+    type: 'line',
+    data: {
+      labels: data.map((_,i)=>i+"s"),
+      datasets: [{
+        label: "Kazanç",
+        data: data
+      }]
+    }
+  });
+}
+
+// kayıt yükleme
+window.onload = () => {
+  let kayit = localStorage.getItem("sonMaas");
+  if(kayit){
+    document.getElementById("sonuc").innerHTML =
+      "Son Hesap: <b>"+parseFloat(kayit).toFixed(2)+" TL</b>";
+  }
+}
+</script>
+
+</body>
+</html>
